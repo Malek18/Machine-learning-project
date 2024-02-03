@@ -20,7 +20,7 @@ other to be defined
 input = an image (jpg, png, gif)
 output = a new representation of the image
 """    
-from PIL import Image
+"""from PIL import Image
 import numpy as np
 import os
 from sklearn.tree import DecisionTreeClassifier
@@ -30,7 +30,7 @@ def raw_image_to_representation(image_file, representation):
    
     img = Image.open(image_file)
    
-    
+    print("test")
     if representation == 'HC':
         
         histogram = img.histogram()
@@ -47,6 +47,40 @@ def raw_image_to_representation(image_file, representation):
     else:
        
         raise ValueError("Undefined representation")
+    
+raw_image_to_representation("C:/Users/malak/Downloads/aka70a.jpeg", 'HC')"""
+
+
+
+from PIL import Image
+import numpy as np
+
+def raw_image_to_representation(image_file, representation):
+    try:
+        img = Image.open(image_file)
+        print("Image ouverte avec succès.")
+        
+        if representation == 'HC':
+            histogram = img.histogram()
+            return histogram
+        elif representation == 'PX':
+            pixels = np.array(img)
+            return pixels
+        elif representation == 'GC':
+            gray_img = img.convert('L')
+            gray_matrix = np.array(gray_img)
+            return gray_matrix
+        else:
+            raise ValueError("Représentation non définie.")
+    except FileNotFoundError:
+        print(f"Fichier '{image_file}' introuvable.")
+    except Exception as e:
+        print(f"Une erreur s'est produite : {str(e)}")
+
+# Exemple d'appel de fonction
+result = raw_image_to_representation("C:/Users/malak/Downloads/aka70a.jpeg", 'HC')
+if result is not None:
+    print("Résultat :", result)
 
 
 """
@@ -66,6 +100,7 @@ namely its name, its representation and its label)
 This structure will later be used to learn a model (function learn_model_from_dataset)
 -- uses function raw_image_to_representation
 """
+""""
 def load_transform_label_train_dataset(directory, representation):
     donneTab = []
 
@@ -101,6 +136,7 @@ def load_transform_label_train_dataset(directory, representation):
 
     
 """
+""""
 Returns a relevant structure embedding test images described according to the 
 specified representation.
 -> Representation can be (to extend) 
@@ -115,9 +151,10 @@ output = a relevant structure, preferably the same chosen for function load_tran
 -- must be consistant with function load_transform_label_train_dataset
 -- while be used later in the project
 """
-def load_transform_test_dataset(directory, representation):
+"""def load_transform_test_dataset(directory, representation):
     return None
 
+"""
 """
 Learn a model (function) from a pre-computed representation of the dataset, using the algorithm 
 and its hyper-parameters described in algo_dico
@@ -130,7 +167,7 @@ output =  a model fit with data
 
 
 
-from sklearn.naive_bayes import MultinomialNB
+"""from sklearn.naive_bayes import MultinomialNB
 
 def learn_model_from_dataset(train_dataset, algo_dico):
     algo = algo_dico['algo'] 
@@ -160,7 +197,7 @@ d=load_transform_label_train_dataset(directory,representation)
 model = learn_model_from_dataset(d, algo_dico)
 print("Modèle entraîné :", model)
 """
-# Création d'un ensemble de données d'entraînement fictif
+"""# Création d'un ensemble de données d'entraînement fictif
 train_dataset = [
     {'representation': [1, 2, 3], 'label': 1},
     {'representation': [4, 5, 6], 'label': -1},
@@ -186,24 +223,32 @@ input = representation of one data, the learned model
 output = the label of that one data (+1 or -1)
 -- uses the model learned by function learn_model_from_dataset
 """
+
 def predict_example_label(example, model):
-    label = 1  # could be -1
-    return label
+    representation = example['representation']
+    label = model.predict([representation])[0]
+     # Si la prédiction est positive ou nulle, retourner +1, sinon -1
+    if predicted_label >= 0:
+        return 1
+    else:
+        return -1
 
 
-"""
-Computes a structure that computes and stores the label of each example of the dataset, 
+"""Computes a structure that computes and stores the label of each example of the dataset, 
 using a previously learned model. 
 --
 input = a structure embedding all transformed data to a representation, and a model
 output =  a structure that associates a label to each identified data (image) of the input dataset
 """
 def predict_sample_label(dataset, model):
-    predictions = None
+    predictions = []
+    for data in dataset:
+        representation = data['representation']  # Extraction de la représentation de l'exemple
+        predicted_label = model.predict([representation])[0]  # Prédiction de l'étiquette avec le modèle
+        predictions.append({'name': data['name'], 'label': predicted_label})  # Stockage de la prédiction avec le nom de l'exemple
     return predictions
 
-"""
-Save the predictions on dataset to a text file with syntax:
+"""Save the predictions on dataset to a text file with syntax:
 image_name <space> label (either -1 or 1)  
 NO ACCENT  
 In order to be perfect, the first lines of this file should indicate the details
@@ -214,19 +259,20 @@ these details to be transmitted along the pipeline.
 input = where to save the predictions, structure embedding the dataset
 output =  OK if the file has been saved, not OK if not
 """
-def write_predictions(directory, filename, predictions):
+"""def write_predictions(directory, filename, predictions):
     return None
 
 """
+""""
 Estimates the accuracy of a previously learned model using train data, 
 either through CV or mean hold-out, with k folds.
 input = the train labelled data as previously structured, the type of model to be learned
 (as in function learn_model_from_data), and the number of split to be used either 
 in a hold-out or by cross-validation 
 output =  The score of success (betwwen 0 and 1, the higher the better, scores under 0.5
-are worst than random guess)
+are worst than random guess)"""
 """
 def estimate_model_score(train_dataset, algo_dico, k):
-    return None
+    return None"""
 
     
