@@ -100,7 +100,7 @@ namely its name, its representation and its label)
 This structure will later be used to learn a model (function learn_model_from_dataset)
 -- uses function raw_image_to_representation
 """
-""""
+
 def load_transform_label_train_dataset(directory, representation):
     donneTab = []
 
@@ -136,7 +136,6 @@ def load_transform_label_train_dataset(directory, representation):
 
     
 """
-""""
 Returns a relevant structure embedding test images described according to the 
 specified representation.
 -> Representation can be (to extend) 
@@ -151,10 +150,10 @@ output = a relevant structure, preferably the same chosen for function load_tran
 -- must be consistant with function load_transform_label_train_dataset
 -- while be used later in the project
 """
-"""def load_transform_test_dataset(directory, representation):
+def load_transform_test_dataset(directory, representation):
     return None
 
-"""
+
 """
 Learn a model (function) from a pre-computed representation of the dataset, using the algorithm 
 and its hyper-parameters described in algo_dico
@@ -167,7 +166,7 @@ output =  a model fit with data
 
 
 
-"""from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import MultinomialNB
 
 def learn_model_from_dataset(train_dataset, algo_dico):
     algo = algo_dico['algo'] 
@@ -189,15 +188,14 @@ def learn_model_from_dataset(train_dataset, algo_dico):
     model.fit(X_train, y_train)
     
     return model
-""""""
+
 directory = "/amuhome/a21222384/Bureau/Data"
 representation = 'HC'  
 algo_dico = {'algo': 'multinomial naive bayes', 'force_alpha': False}
 d=load_transform_label_train_dataset(directory,representation)
 model = learn_model_from_dataset(d, algo_dico)
 print("Modèle entraîné :", model)
-"""
-"""# Création d'un ensemble de données d'entraînement fictif
+# Création d'un ensemble de données d'entraînement fictif
 train_dataset = [
     {'representation': [1, 2, 3], 'label': 1},
     {'representation': [4, 5, 6], 'label': -1},
@@ -214,7 +212,7 @@ model = learn_model_from_dataset(train_dataset, algo_dico)
 
 # Affichage du modèle entraîné
 print("Modèle entraîné :", model)
-"""
+
 """
 Given one example (previously loaded with its name and representation),
 computes its class according to a previously learned model.
@@ -259,10 +257,21 @@ these details to be transmitted along the pipeline.
 input = where to save the predictions, structure embedding the dataset
 output =  OK if the file has been saved, not OK if not
 """
-"""def write_predictions(directory, filename, predictions):
-    return None
+def write_predictions(directory, filename, predictions):
+    try:
+        with open(os.path.join(directory, filename), 'w') as file:
+            file.write("Learning method: {}\n".format(predictions['learning_method']))
+            file.write("Hyperparameters: {}\n\n".format(predictions['hyperparameters']))
+            
+            for prediction in predictions['predictions']:
+                file.write("{} {}\n".format(prediction['name'], prediction['label']))
+        
+        return "OK"
+    except Exception as e:
+        print("Error:", e)
+        return "Not OK"
 
-"""
+
 """"
 Estimates the accuracy of a previously learned model using train data, 
 either through CV or mean hold-out, with k folds.
@@ -271,8 +280,15 @@ input = the train labelled data as previously structured, the type of model to b
 in a hold-out or by cross-validation 
 output =  The score of success (betwwen 0 and 1, the higher the better, scores under 0.5
 are worst than random guess)"""
-"""
-def estimate_model_score(train_dataset, algo_dico, k):
-    return None"""
 
+def estimate_model_score(train_dataset, algo_dico, k):
+    
+    X_train = [data['representation'] for data in train_dataset]
+    y_train = [data['label'] for data in train_dataset]
+    
+    model = learn_model_from_dataset(train_dataset, algo_dico)
+    scores = cross_val_score(model, X_train, y_train, cv=k)
+    mean_score = scores.mean()
+    
+    return mean_score
     
