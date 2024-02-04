@@ -8,6 +8,7 @@
 @author: cecile capponi, AMU
 L3 Informatique, 2023/24
 """
+import os
 
 """
 Computes a representation of an image from the (gif, png, jpg...) file 
@@ -78,7 +79,7 @@ def raw_image_to_representation(image_file, representation):
         print(f"Une erreur s'est produite : {str(e)}")
 
 # Exemple d'appel de fonction
-result = raw_image_to_representation("C:/Users/malak/Downloads/aka70a.jpeg", 'HC')
+result = raw_image_to_representation("/home/nadia/PycharmProjects/Machine-learning-project/Data/Mer/838s.jpg", 'HC')
 if result is not None:
     print("Résultat :", result)
 
@@ -222,14 +223,15 @@ output = the label of that one data (+1 or -1)
 -- uses the model learned by function learn_model_from_dataset
 """
 
+
 def predict_example_label(example, model):
     representation = example['representation']
-    label = model.predict([representation])[0]
-     # Si la prédiction est positive ou nulle, retourner +1, sinon -1
-    if predicted_label >= 0:
-        return 1
-    else:
-        return -1
+    predicted_label = model.predict([representation])[0]  # Prédiction de l'étiquette avec le modèle
+
+    # Si la prédiction est positive ou nulle, retourner +1, sinon -1
+    label = 1 if predicted_label >= 0 else -1
+
+    return label
 
 
 """Computes a structure that computes and stores the label of each example of the dataset, 
@@ -257,16 +259,22 @@ these details to be transmitted along the pipeline.
 input = where to save the predictions, structure embedding the dataset
 output =  OK if the file has been saved, not OK if not
 """
+import os
+
+
 def write_predictions(directory, filename, predictions):
     try:
-        with open(os.path.join(directory, filename), 'w') as file:
-            file.write("Learning method: {}\n".format(predictions['learning_method']))
-            file.write("Hyperparameters: {}\n\n".format(predictions['hyperparameters']))
-            
+        file_path = os.path.join(directory, filename)
+
+        with open(file_path, 'w') as file:
+            file.write(f"Learning method: {predictions['learning_method']}\n")
+            file.write(f"Hyperparameters: {predictions['hyperparameters']}\n\n")
+
             for prediction in predictions['predictions']:
-                file.write("{} {}\n".format(prediction['name'], prediction['label']))
-        
+                file.write(f"{prediction['name']} {prediction['label']}\n")
+
         return "OK"
+
     except Exception as e:
         print("Error:", e)
         return "Not OK"
@@ -280,7 +288,7 @@ input = the train labelled data as previously structured, the type of model to b
 in a hold-out or by cross-validation 
 output =  The score of success (betwwen 0 and 1, the higher the better, scores under 0.5
 are worst than random guess)"""
-
+from sklearn.model_selection import cross_val_score
 def estimate_model_score(train_dataset, algo_dico, k):
     
     X_train = [data['representation'] for data in train_dataset]
