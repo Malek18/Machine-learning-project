@@ -1,99 +1,62 @@
-
-#hi les filles 
-
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 @author: cecile capponi, AMU
 L3 Informatique, 2023/24
 """
-import os
 
 """
-Computes a representation of an image from the (gif, png, jpg...) file 
--> representation can be (to extend) 
+Computes a representation of an image from the (gif, png, jpg...) file
+-> representation can be (to extend)
 'HC': color histogram
 'PX': tensor of pixels
-'GC': matrix of gray pixels 
+'GC': matrix of gray pixels
 other to be defined
 --
 input = an image (jpg, png, gif)
 output = a new representation of the image
 """    
-"""from PIL import Image
-import numpy as np
+from PIL import Image
+import  numpy as np
 import os
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
 
-def raw_image_to_representation(image_file, representation):
-   
-    img = Image.open(image_file)
-   
-    print("test")
-    if representation == 'HC':
-        
-        histogram = img.histogram()
-        return histogram
-    elif representation == 'PX':
-        
-        pixels = np.array(img)
-        return pixels
-    elif representation == 'GC':
-       
-        gray_img = img.convert('L')
-        gray_matrix = np.array(gray_img)
-        return gray_matrix
-    else:
-       
-        raise ValueError("Undefined representation")
-    
-raw_image_to_representation("C:/Users/malak/Downloads/aka70a.jpeg", 'HC')"""
-
-
-
-from PIL import Image
-import numpy as np
+from sklearn.model_selection import cross_val_score
 
 def raw_image_to_representation(image_file, representation):
-    try:
-        img = Image.open(image_file)
-        print("Image ouverte avec succès.")
-        
-        if representation == 'HC':
-            histogram = img.histogram()
-            return histogram
-        elif representation == 'PX':
-            pixels = np.array(img)
-            return pixels
-        elif representation == 'GC':
-            gray_img = img.convert('L')
-            gray_matrix = np.array(gray_img)
-            return gray_matrix
-        else:
-            raise ValueError("Représentation non définie.")
-    except FileNotFoundError:
-        print(f"Fichier '{image_file}' introuvable.")
-    except Exception as e:
-        print(f"Une erreur s'est produite : {str(e)}")
-
-# Exemple d'appel de fonction
-result = raw_image_to_representation("/home/nadia/PycharmProjects/Machine-learning-project/Data/Mer/838s.jpg", 'HC')
-if result is not None:
-    print("Résultat :", result)
-
+  
+   img = Image.open(image_file)
+  
+  
+   if representation == 'HC':
+      
+       histogram = img.histogram()
+       return histogram
+   elif representation == 'PX':
+      
+       pixels = np.array(img)
+       return pixels
+   elif representation == 'GC':
+      
+       gray_img = img.convert('L')
+       gray_matrix = np.array(gray_img)
+       return gray_matrix
+   else:
+      
+       raise ValueError("Undefined representation")
+  
 
 """
-Returns a relevant structure embedding train images described according to the 
+Returns a relevant structure embedding train images described according to the
 specified representation and associate each image (name or/and location) to its label.
--> Representation can be (to extend) 
+-> Representation can be (to extend)
 'HC': color histogram
-'PX': tensor of pixels 
+'PX': tensor of pixels
 'GC': matrix of gray pixels
 other to be defined
 --
-input = where are the examples, which representation of the data must be produced ? 
+input = where are the examples, which representation of the data must be produced ?
 output = a relevant structure (to be discussed, see below) where all the images of the
 directory have been transformed, named and labelled according to the directory they are
 stored in (the structure lists all the images, each image is made up of 3 informations,
@@ -103,62 +66,64 @@ This structure will later be used to learn a model (function learn_model_from_da
 """
 
 def load_transform_label_train_dataset(directory, representation):
-    donneTab = []
+   donneTab = []
 
-    
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-           
-                image_file = os.path.join(root, file)
+  
+   for root, dirs, files in os.walk(directory):
+       for file in files:
+          
+               image_file = os.path.join(root, file)
 
-               
-                image_representation = raw_image_to_representation(image_file, representation)
+              
+               image_representation = raw_image_to_representation(image_file, representation)
 
-               
-                if 'Mer' in root:
-                    label = 1
-                elif 'Ailleurs' in root:
-                    label = -1
-                else:
-                    raise ValueError("Répertoire non étiqueté")
+              
+               if 'Mer' in root:
+                   label = 1
+               elif 'Ailleurs' in root:
+                   label = -1
+               else:
+                   raise ValueError("Répertoire non étiqueté")
 
-                
-                image_data = {
-                    'name': file,  
-                    'representation': image_representation,  
-                    'label': label  
-                }
+              
+               image_data = {
+                   'name': file,  
+                   'representation': image_representation,  
+                   'label': label  
+               }
 
-            
-                donneTab.append(image_data)
+          
+               donneTab.append(image_data)
 
-    return donneTab
+   return donneTab
+
+
+
   
 
-    
 """
-Returns a relevant structure embedding test images described according to the 
+Returns a relevant structure embedding test images described according to the
 specified representation.
--> Representation can be (to extend) 
+-> Representation can be (to extend)
 'HC': color histogram
-'PX': tensor of pixels 
-'GC': matrix of gray pixels 
+'PX': tensor of pixels
+'GC': matrix of gray pixels
 other to be defined
 --
-input = where are the data, which represenation of the data must be produced ? 
+input = where are the data, which represenation of the data must be produced ?
 output = a relevant structure, preferably the same chosen for function load_transform_label_train_data
 -- uses function raw_image_to_representation
 -- must be consistant with function load_transform_label_train_dataset
 -- while be used later in the project
 """
 def load_transform_test_dataset(directory, representation):
-    return None
+   return None
 
 
 """
-Learn a model (function) from a pre-computed representation of the dataset, using the algorithm 
+Learn a model (function) from a pre-computed representation of the dataset, using the algorithm
 and its hyper-parameters described in algo_dico
-For example, algo_dico could be { algo: 'decision tree', max_depth: 5, min_samples_split: 3 } 
+For example, algo_dico could be { algo: 'decision tree', max_depth: 5, min_samples_split: 3 }
 or { algo: 'multinomial naive bayes', force_alpha: True }
 --
 input = transformed labelled dataset, the used learning algo and its hyper-parameters (better a dico)
@@ -167,53 +132,59 @@ output =  a model fit with data
 
 
 
-from sklearn.naive_bayes import MultinomialNB
+
 
 def learn_model_from_dataset(train_dataset, algo_dico):
-    algo = algo_dico['algo'] 
-    model = None
-    
-    if algo == 'multinomial naive bayes':
-       
-        force_alpha = algo_dico.get('force_alpha', False)
-    
-        model = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None, force_alpha=force_alpha)
-    else:
-        raise ValueError("Algorithme d'apprentissage non pris en charge")
-    
-    
-    X_train = [data['representation'] for data in train_dataset]
-    y_train = [data['label'] for data in train_dataset]
-    
-    
-    model.fit(X_train, y_train)
-    
-    return model
+   algo = algo_dico['algo']
+   model = None
+  
+   if algo == 'multinomial naive bayes':
+      
+       force_alpha = algo_dico.get('force_alpha', False)
+  
+       model = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None, force_alpha=force_alpha)
+   else:
+       raise ValueError("Algorithme d'apprentissage non pris en charge")
+  
+  
+   X_train = [data['representation'] for data in train_dataset]
+   y_train = [data['label'] for data in train_dataset]
+   max_length = max(len(rep) for rep in X_train)
+   X_train = [rep + [0] * (max_length - len(rep)) for rep in X_train]
+   X_train = np.array(X_train)
+   y_train = np.array(y_train)
+   model.fit(X_train, y_train)
 
-directory = "/amuhome/a21222384/Bureau/Data"
-representation = 'HC'  
-algo_dico = {'algo': 'multinomial naive bayes', 'force_alpha': False}
-d=load_transform_label_train_dataset(directory,representation)
-model = learn_model_from_dataset(d, algo_dico)
-print("Modèle entraîné :", model)
-# Création d'un ensemble de données d'entraînement fictif
-train_dataset = [
-    {'representation': [1, 2, 3], 'label': 1},
-    {'representation': [4, 5, 6], 'label': -1},
-    {'representation': [7, 8, 9], 'label': 1},
-    {'representation': [10, 11, 12], 'label': -1},
-    # Ajoutez d'autres exemples ici
-]
+   return model
 
-# Définition de l'algorithme et de ses hyperparamètres
-algo_dico = {'algo': 'multinomial naive bayes', 'force_alpha': False}
 
-# Apprentissage du modèle à partir de l'ensemble de données fictif
+
+train_dataset = load_transform_label_train_dataset('/home/codespace/Machine-learning-project/Data','HC')
+
+
+algo_dico = {
+   'algo': 'multinomial naive bayes',
+   'force_alpha': True  
+}
 model = learn_model_from_dataset(train_dataset, algo_dico)
+if model is not None:
+   print("Le modèle a été correctement entraîné.")
+   print("Classes:", model.classes_)
+   print("Probabilités a priori des classes:", model.class_log_prior_)
+   print("Probabilités conditionnelles des caractéristiques:", model.feature_log_prob_)
+else:
+   print("Une erreur s'est produite lors de l'apprentissage du modèle.")
 
-# Affichage du modèle entraîné
-print("Modèle entraîné :", model)
+"""
+Dans ce code :
 
+   Nous avons simulé un ensemble de données d'entraînement avec des représentations et des étiquettes.
+   Nous avons défini un dictionnaire d'algorithme avec l'algorithme "multinomial naive bayes" et les hyperparamètres associés.
+   Nous avons appelé la fonction learn_model_from_dataset avec ces paramètres et vérifié si le modèle retourné n'est pas None, ce qui signifierait que l'apprentissage du modèle a réussi.
+
+5 / 5
+
+"""
 """
 Given one example (previously loaded with its name and representation),
 computes its class according to a previously learned model.
@@ -225,78 +196,85 @@ output = the label of that one data (+1 or -1)
 
 
 def predict_example_label(example, model):
-    representation = example['representation']
-    predicted_label = model.predict([representation])[0]  # Prédiction de l'étiquette avec le modèle
+   representation = example['representation']
+   label = model.predict([representation])[0]
+    
+   if label >= 0:
+       return 1
+   else:
+       return -1
+   
 
-    # Si la prédiction est positive ou nulle, retourner +1, sinon -1
-    label = 1 if predicted_label >= 0 else -1
 
-    return label
-
-
-"""Computes a structure that computes and stores the label of each example of the dataset, 
-using a previously learned model. 
+"""Computes a structure that computes and stores the label of each example of the dataset,
+using a previously learned model.
 --
 input = a structure embedding all transformed data to a representation, and a model
 output =  a structure that associates a label to each identified data (image) of the input dataset
 """
 def predict_sample_label(dataset, model):
-    predictions = []
-    for data in dataset:
-        representation = data['representation']  # Extraction de la représentation de l'exemple
-        predicted_label = model.predict([representation])[0]  # Prédiction de l'étiquette avec le modèle
-        predictions.append({'name': data['name'], 'label': predicted_label})  # Stockage de la prédiction avec le nom de l'exemple
-    return predictions
+   labeled_dataset = []
+
+   for data in dataset:
+       name = data['name']
+       label = predict_example_label(data, model)
+       
+       labeled_data = {
+           'name': name,
+           'label': label
+       }
+       
+       labeled_dataset.append(labeled_data)
+
+   return labeled_dataset
+
 
 """Save the predictions on dataset to a text file with syntax:
+
 image_name <space> label (either -1 or 1)  
 NO ACCENT  
 In order to be perfect, the first lines of this file should indicate the details
 of the learning methods used, with its hyper-parameters (in order to do so, the signature of
-the function must be changed, as well as the signatures of some previous functions in order for 
-these details to be transmitted along the pipeline. 
+the function must be changed, as well as the signatures of some previous functions in order for
+these details to be transmitted along the pipeline.
 --
 input = where to save the predictions, structure embedding the dataset
 output =  OK if the file has been saved, not OK if not
 """
-import os
-
-
 def write_predictions(directory, filename, predictions):
-    try:
-        file_path = os.path.join(directory, filename)
-
-        with open(file_path, 'w') as file:
-            file.write(f"Learning method: {predictions['learning_method']}\n")
-            file.write(f"Hyperparameters: {predictions['hyperparameters']}\n\n")
-
-            for prediction in predictions['predictions']:
-                file.write(f"{prediction['name']} {prediction['label']}\n")
-
-        return "OK"
-
-    except Exception as e:
-        print("Error:", e)
-        return "Not OK"
+   try:
+       with open(os.path.join(directory, filename), 'w') as file:
+           file.write("Learning method: {}\n".format(predictions['learning_method']))
+           file.write("Hyperparameters: {}\n\n".format(predictions['hyperparameters']))
+           
+           for prediction in predictions['predictions']:
+               file.write("{} {}\n".format(prediction['name'], prediction['label']))
+       
+       return "OK"
+   except Exception as e:
+       print("Error:", e)
+       return "Not OK"
 
 
-""""
-Estimates the accuracy of a previously learned model using train data, 
+"""
+Estimates the accuracy of a previously learned model using train data,
 either through CV or mean hold-out, with k folds.
 input = the train labelled data as previously structured, the type of model to be learned
-(as in function learn_model_from_data), and the number of split to be used either 
-in a hold-out or by cross-validation 
+(as in function learn_model_from_data), and the number of split to be used either
+in a hold-out or by cross-validation
 output =  The score of success (betwwen 0 and 1, the higher the better, scores under 0.5
 are worst than random guess)"""
-from sklearn.model_selection import cross_val_score
+
+
 def estimate_model_score(train_dataset, algo_dico, k):
-    
-    X_train = [data['representation'] for data in train_dataset]
-    y_train = [data['label'] for data in train_dataset]
-    
-    model = learn_model_from_dataset(train_dataset, algo_dico)
-    scores = cross_val_score(model, X_train, y_train, cv=k)
-    mean_score = scores.mean()
-    
-    return mean_score
-    
+   
+   X_train = [data['representation'] for data in train_dataset]
+   y_train = [data['label'] for data in train_dataset]
+   
+   model = learn_model_from_dataset(train_dataset, algo_dico)
+   scores = cross_val_score(model, X_train, y_train, cv=k)
+   mean_score = scores.mean()
+   
+   return mean_score
+
+
