@@ -113,7 +113,7 @@ output = a relevant structure, preferably the same chosen for function load_tran
 def load_transform_test_dataset(directory, representation):
    test_dataset = []
 
-   for root, files in os.walk(directory):
+   for root,dirs,files in os.walk(directory):
        for file in files:
            image_file = os.path.join(root, file)
            image_representation = raw_image_to_representation(image_file, representation)
@@ -125,6 +125,8 @@ def load_transform_test_dataset(directory, representation):
            test_dataset.append(test_data)
 
    return test_dataset
+
+
 
 
 
@@ -285,4 +287,23 @@ def estimate_model_score(train_dataset, algo_dico, k):
   scores = cross_val_score(model, X_train, y_train, cv=k)
   mean_score = scores.mean()
   
-  return mean_score
+  return mean_score 
+
+
+
+# Charger les données de test
+test_directory = '/home/codespace/Machine-learning-project/Test'
+test_representation = 'HC'  # ou toute autre représentation souhaitée
+test_dataset = load_transform_test_dataset(test_directory, test_representation)
+
+# Faire des prédictions sur les données de test
+predictions = predict_sample_label(test_dataset, model)
+
+# Évaluer la qualité du modèle
+# Par exemple, calculer l'exactitude
+true_labels = [data['label'] for data in test_dataset]
+predicted_labels = [data['label'] for data in predictions]
+
+from sklearn.metrics import accuracy_score
+accuracy = accuracy_score(true_labels, predicted_labels)
+print("Exactitude du modèle:", accuracy)
