@@ -15,9 +15,9 @@ other to be defined
 --
 input = an image (jpg, png, gif)
 output = a new representation of the image
-"""    
+"""
 from PIL import Image
-import  numpy as np
+import numpy as np
 import os
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -26,42 +26,65 @@ from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 import cv2
 from skimage import feature
-def raw_image_to_representation(image_file, representation):
-  
+from skimage.color import rgb2gray
+from scipy import fft
+import pywt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import accuracy_score
+
+from sklearn.model_selection import train_test_split
+
+
+def raw_image_to_representation(image_file, representations):
     img = Image.open(image_file)
     img = img.resize((100, 100))
     img = img.convert('RGB')
     img_gray = img.convert('L')
-    if representation == 'HC':
-        
-        histogram = np.array(img.histogram())
-        return histogram
-    elif representation == 'PX':
-        
-        pixels = np.array(img)
-        return pixels.reshape(-1)
 
+    combined_representation = []
 
-    elif representation == 'GC':
-        
-        gray_img = img.convert('L')
-        gray_matrix = np.array(gray_img)
-        pixels=[]
-        for l in  gray_matrix:
-            for p in l:
-                pixels.append(p)
-        return np.array(pixels)
-    
-    elif representation == 'HOG':
-        hog_feature = feature.hog(np.array(img_gray), pixels_per_cell=(16, 16), cells_per_block=(1, 1), visualize=False)
-        return hog_feature
-    
-    else:
-        raise ValueError("Undefined representation")
+    for representation in representations:
+        if representation == 'HC':
+            histogram = np.array(img.histogram())
+            combined_representation.extend(histogram)
+        elif representation == 'PX':
+            pixels = np.array(img)
+            combined_representation.extend(pixels.reshape(-1))
+        elif representation == 'GC':
+            gray_matrix = np.array(img_gray)
+            combined_representation.extend(gray_matrix.flatten())
+        elif representation == 'FOURIER':
+            img_gray = rgb2gray(np.array(img))
+            fft_image = np.abs(fft.fftshift(fft.fft2(img_gray)))
+            combined_representation.extend(fft_image.flatten())
+        elif representation == 'HOG':
+            hog_feature = feature.hog(np.array(img_gray), pixels_per_cell=(16, 16), cells_per_block=(1, 1),
+                                      visualize=False)
+            combined_representation.extend(hog_feature)
+        elif representation == 'SHAPE_MOMENTS':
+            moments = cv2.moments(np.array(img_gray))
+            hu_moments = cv2.HuMoments(moments).flatten()
+            combined_representation.extend(hu_moments)
+        elif representation == 'WAVELET':
+            coeffs = pywt.dwt2(np.array(img_gray), 'haar')
+            cA, (cH, cV, cD) = coeffs
+            combined_representation.extend(cA.flatten())
+            combined_representation.extend(cH.flatten())
+            combined_representation.extend(cV.flatten())
+            combined_representation.extend(cD.flatten())
+        elif representation == 'HuMoments':
+            moments = cv2.moments(np.array(img_gray))
+            hu_moments = cv2.HuMoments(moments).flatten()
+            combined_representation.extend(hu_moments)
+        else:
+            raise ValueError("Undefined representation")
 
-	
+    return np.array(combined_representation)
 
-  
 
 """
 Returns a relevant structure embedding train images described according to the
@@ -81,43 +104,34 @@ This structure will later be used to learn a model (function learn_model_from_da
 -- uses function raw_image_to_representation
 """
 
+
 def load_transform_label_train_dataset(directory, representation):
-   donneTab = []
+    donneTab = []
 
-  
-   for root,dirs, files in os.walk(directory):
-       for file in files:
-          
-               image_file = os.path.join(root, file)
+    for root, dirs, files in os.walk(directory):
+        for file in files:
 
-              
-               image_representation = raw_image_to_representation(image_file, representation)
+            image_file = os.path.join(root, file)
 
-              
-               if 'Mer' in root:
-                   label = 1
-               elif 'Ailleurs' in root:
-                   label = -1
-               else:
-                   raise ValueError("Répertoire non étiqueté")
+            image_representation = raw_image_to_representation(image_file, representation)
 
-              
-               image_data = {
-                   'name': file,  
-                   'representation': image_representation,  
-                   'label': label  
-               }
+            if 'Mer' in root:
+                label = 1
+            elif 'Ailleurs' in root:
+                label = -1
+            else:
+                raise ValueError("Répertoire non étiqueté")
 
-          
-               donneTab.append(image_data)
+            image_data = {
+                'name': file,
+                'representation': image_representation,
+                'label': label
+            }
 
-   return donneTab
+            donneTab.append(image_data)
 
+    return donneTab
 
-
-
-
-  
 
 """
 Returns a relevant structure embedding test images described according to the
@@ -134,22 +148,23 @@ output = a relevant structure, preferably the same chosen for function load_tran
 -- must be consistant with function load_transform_label_train_dataset
 -- while be used later in the project
 """
+
+
 def load_transform_test_dataset(directory, representation):
     test_dataset = []
 
-    for root, dirs,files in os.walk(directory):
+    for root, dirs, files in os.walk(directory):
         for file in files:
             image_file = os.path.join(root, file)
             image_representation = raw_image_to_representation(image_file, representation)
             test_data = {
                 'name': file,
                 'representation': image_representation,
-                'label':0
+                'label': 0
             }
             test_dataset.append(test_data)
 
     return test_dataset
-
 
 
 """
@@ -163,13 +178,9 @@ output =  a model fit with data
 """
 
 
-
-
-
 def learn_model_from_dataset(train_dataset, algo_dico):
     algo = algo_dico['algo']
     model = None
-    
 
     if algo == 'multinomial naive bayes':
         force_alpha = algo_dico.get('force_alpha', True)
@@ -188,6 +199,22 @@ def learn_model_from_dataset(train_dataset, algo_dico):
         max_depth = algo_dico.get('max_depth', 5)
         min_samples_split = algo_dico.get('min_samples_split', 3)
         model = DecisionTreeClassifier(max_depth=max_depth, min_samples_split=min_samples_split)
+    elif algo == 'random_forest':
+        n_estimators = algo_dico.get('n_estimators', 100)
+        max_depth = algo_dico.get('max_depth', None)
+        min_samples_split = algo_dico.get('min_samples_split', 2)
+        model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth,
+                                       min_samples_split=min_samples_split)
+    elif algo == 'logistic_regression':
+        penalty = algo_dico.get('penalty', 'l2')
+        C = algo_dico.get('C', 1.0)
+        model = LogisticRegression(penalty=penalty, C=C)
+    elif algo == 'mlp':
+        hidden_layer_sizes = algo_dico.get('hidden_layer_sizes', (100,))
+        activation = algo_dico.get('activation', 'relu')
+        solver = algo_dico.get('solver', 'adam')
+        model = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, activation=activation, solver=solver)
+
     else:
         raise ValueError("Algorithme d'apprentissage non pris en charge")
 
@@ -197,6 +224,8 @@ def learn_model_from_dataset(train_dataset, algo_dico):
     model.fit(X_train, y_train)
 
     return model
+
+
 """
 
 
@@ -204,24 +233,24 @@ train_dataset = load_transform_label_train_dataset('/home/diae/Documents/projetA
 
 
 algo_dico = {
-   'algo': 'multinomial naive bayes',
-   'force_alpha': True  
+  'algo': 'multinomial naive bayes',
+  'force_alpha': True  
 }
 model = learn_model_from_dataset(train_dataset, algo_dico)
 if model is not None:
-   print("Le modèle a été correctement entraîné.")
-   print("Classes:", model.classes_)
-   print("Probabilités a priori des classes:", model.class_log_prior_)
-   print("Probabilités conditionnelles des caractéristiques:", model.feature_log_prob_)
+  print("Le modèle a été correctement entraîné.")
+  print("Classes:", model.classes_)
+  print("Probabilités a priori des classes:", model.class_log_prior_)
+  print("Probabilités conditionnelles des caractéristiques:", model.feature_log_prob_)
 else:
-   print("Une erreur s'est produite lors de l'apprentissage du modèle.")
+  print("Une erreur s'est produite lors de l'apprentissage du modèle.")
 """
 """
 Dans ce code :
 
-   Nous avons simulé un ensemble de données d'entraînement avec des représentations et des étiquettes.
-   Nous avons défini un dictionnaire d'algorithme avec l'algorithme "multinomial naive bayes" et les hyperparamètres associés.
-   Nous avons appelé la fonction learn_model_from_dataset avec ces paramètres et vérifié si le modèle retourné n'est pas None, ce qui signifierait que l'apprentissage du modèle a réussi.
+  Nous avons simulé un ensemble de données d'entraînement avec des représentations et des étiquettes.
+  Nous avons défini un dictionnaire d'algorithme avec l'algorithme "multinomial naive bayes" et les hyperparamètres associés.
+  Nous avons appelé la fonction learn_model_from_dataset avec ces paramètres et vérifié si le modèle retourné n'est pas None, ce qui signifierait que l'apprentissage du modèle a réussi.
 
 5 / 5
 
@@ -237,14 +266,13 @@ output = the label of that one data (+1 or -1)
 
 
 def predict_example_label(example, model):
-   representation = example['representation']
-   label = model.predict([representation])[0]
-    
-   if label >= 0:
-       return 1
-   else:
-       return -1
-   
+    representation = example['representation']
+    label = model.predict([representation])[0]
+
+    if label >= 0:
+        return 1
+    else:
+        return -1
 
 
 """Computes a structure that computes and stores the label of each example of the dataset,
@@ -253,21 +281,23 @@ using a previously learned model.
 input = a structure embedding all transformed data to a representation, and a model
 output =  a structure that associates a label to each identified data (image) of the input dataset
 """
+
+
 def predict_sample_label(dataset, model):
-   labeled_dataset = []
+    labeled_dataset = []
 
-   for data in dataset:
-       name = data['name']
-       label = predict_example_label(data, model)
-       
-       labeled_data = {
-           'name': name,
-           'label': label
-       }
-       
-       labeled_dataset.append(labeled_data)
+    for data in dataset:
+        name = data['name']
+        label = predict_example_label(data, model)
 
-   return labeled_dataset
+        labeled_data = {
+            'name': name,
+            'label': label
+        }
+
+        labeled_dataset.append(labeled_data)
+
+    return labeled_dataset
 
 
 """Save the predictions on dataset to a text file with syntax:
@@ -283,24 +313,22 @@ input = where to save the predictions, structure embedding the dataset
 output =  OK if the file has been saved, not OK if not
 """
 
-def write_predictions(directory, filename, predictions , model, sentence ):
-   try:
-       with open(os.path.join(directory, filename), 'w') as file:
-           file.write(sentence)
-           file.write("Algorithme utilisé :\n")
-           for key, value in hypersparametres.items():
-               file.write("{}: {}\n".format(key, value))
-           
 
+def write_predictions(directory, filename, predictions, algo_dico, sentence):
+    try:
+        with open(os.path.join(directory, filename), 'w') as file:
+            file.write(sentence)
+            file.write("Algorithme utilisé :\n")
+            for key, value in algo_dico.items():
+                file.write("{}: {}\n".format(key, value))
 
-           for prediction in predictions:
-               file.write("{} {}\n".format(prediction['name'], prediction['label']))
-           
-      
-       return "OK"
-   except Exception as e:
-       print("Error:", e)
-       return "Not OK"
+            for prediction in predictions:
+                file.write("{} {}\n".format(prediction['name'], prediction['label']))
+
+        return "OK"
+    except Exception as e:
+        print("Error:", e)
+        return "Not OK"
 
 
 """
@@ -314,30 +342,35 @@ are worst than random guess)"""
 
 
 def estimate_model_score(train_dataset, algo_dico, k):
-   
-   X_train = [data['representation'] for data in train_dataset]
-   y_train = [data['label'] for data in train_dataset]
-   
-   model = learn_model_from_dataset(train_dataset, algo_dico)
-   scores = cross_val_score(model, X_train, y_train, cv=k)
-   mean_score = scores.mean()
-   
-   return mean_score
+    X_train = [data['representation'] for data in train_dataset]
+    y_train = [data['label'] for data in train_dataset]
+
+    model = learn_model_from_dataset(train_dataset, algo_dico)
+    scores = cross_val_score(model, X_train, y_train, cv=k)
+    mean_score = scores.mean()
+
+    return mean_score
 
 
-# Main 
+# Main
 
-dataset = load_transform_label_train_dataset('/home/diae/Documents/projetAA/projetAA/Data', 'HC')
-dataset_test = load_transform_test_dataset('/home/diae/Documents/projetAA/projetAA/AllTest', 'HC')
+
+representations = ['PX', 'GC', 'FOURIER', 'WAVELET']
+
+dataset = load_transform_label_train_dataset('Data',
+                                             representations)
+
+dataset_test = load_transform_test_dataset('AllTest' , representations)
+
 algo_dico1 = {
     'algo': 'svm',
-    'kernel': 'rbf', 
-    'C': 1.0,          
-    'gamma': 'scale'  
+    'kernel': 'rbf',
+    'C': 1.0,
+    'gamma': 'scale'
 }
 algo_dico2 = {
     'algo': 'multinomial naive bayes',
-    'force_alpha': True  
+    'force_alpha': True
 }
 algo_dico3 = {
     'algo': 'k_neighbors',
@@ -349,11 +382,45 @@ algo_dico4 = {
     'max_depth': 5,
     'min_samples_split': 3
 }
+algo_dico5 = {
+    'algo': 'random_forest',
+    'n_estimators': 100,
+    'max_depth': None,
+    'min_samples_split': 2
+}
+algo_dico6 = {
+    'algo': 'logistic_regression',
+    'penalty': 'l2',
+    'C': 1.0
+}
+algo_dico7 = {
+    'algo': 'mlp',
+    'hidden_layer_sizes': (100,),
+    'activation': 'relu',
+    'solver': 'adam'
+}
 
+# Diviser les données d'entraînement en ensembles d'entraînement et de validation
+train_dataset, validation_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
+
+score = estimate_model_score(train_dataset, algo_dico1, k=5)
+
+best_model = learn_model_from_dataset(train_dataset, algo_dico1)
+
+# Utiliser le meilleur modèle pour faire des prédictions sur l'ensemble de test
+test_predictions = predict_sample_label(dataset_test, best_model)
+
+sentence = f"Pour la machine qui détecte la mère à partir des images données, le score est : {score}. L'algorithme de classification utilisé est : {algo_dico1}\n"
+
+# Enregistrer les prédictions dans un fichier
+final_result = write_predictions("./", "test.txt", test_predictions, algo_dico1, sentence)
+print(final_result)
+
+"""
 hypersparametres=algo_dico1
 model = learn_model_from_dataset(dataset, algo_dico1)
 predicted_labels = predict_sample_label(dataset_test, model)
 score = estimate_model_score(dataset, algo_dico1, k=5)
 sentence=f"pour la machine qui detecte la mére a partir des images données,le score est : {score} l'algorithme de classification est :\n"
-final_result = write_predictions("./", "Maritime_Minds.txt", predicted_labels, hypersparametres, sentence)
-print(final_result)
+final_result = write_predictions("./", "test.txt", predicted_labels, hypersparametres, sentence)
+print(final_result)"""
