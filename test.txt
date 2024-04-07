@@ -1,4 +1,4 @@
-Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entrainement est: 0.7764360018091361,le score est de donnée de validation est: 0.7588235294117647,le score est de donnée de test est: 0.7682926829268293. L'algorithme de classification utilisé est : {'algo': 'svm', 'kernel': 'rbf', 'C': 1.0, 'gamma': 'scale'}
+Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entrainement est: 0.7944821347806423,le score est de donnée de validation est: 0.7713235294117646,le score est de donnée de test est: 0.7926829268292683. L'algorithme de classification utilisé est : {'algo': 'svm', 'kernel': 'rbf', 'C': 1.0, 'gamma': 'scale'}
 Algorithme utilisé :
 algo: svm
 kernel: rbf
@@ -10,9 +10,9 @@ gamma: scale
 0cxvhyy.jpg -1
 0derz.jpg -1
 0dfe.jpg -1
-0do.jpeg -1
+0do.jpeg 1
 0dspv6.jpg 1
-0fe.jpeg -1
+0fe.jpeg 1
 0ft.jpeg -1
 0gaqll.jpg -1
 0groby.jpg 1
@@ -42,7 +42,7 @@ gamma: scale
 0swuia.jpg -1
 0tu.jpeg -1
 0vbfg.JPG -1
-0wmzp.jpg 1
+0wmzp.jpg -1
 0wq.jpeg -1
 0wsqwx.jpg -1
 0xsoua.jpg 1
@@ -63,11 +63,11 @@ gamma: scale
 1mhst.jpg 1
 1mpzva.jpg 1
 1njuu.jpg -1
-1oohh.jpg -1
+1oohh.jpg 1
 1phao.JPG 1
 1pooi.jpeg 1
 1q10.jpeg 1
-1q11.jpeg -1
+1q11.jpeg 1
 1q12.jpeg 1
 1q7.jpeg 1
 1q8.jpeg 1
@@ -75,7 +75,7 @@ gamma: scale
 1rddq.jpg 1
 1spme.jpg 1
 1sql.jpg 1
-1t1.jpeg -1
+1t1.jpeg 1
 1tptp.jpg -1
 1ut.jpeg 1
 1uu.jpeg 1

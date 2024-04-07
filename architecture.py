@@ -4,6 +4,7 @@
 @author: cecile capponi, AMU
 L3 Informatique, 2023/24
 """
+import skimage
 
 """
 Computes a representation of an image from the (gif, png, jpg...) file
@@ -35,6 +36,11 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score
+
+from skimage.feature import greycomatrix, graycoprops
+
+
+
 
 from sklearn.model_selection import train_test_split
 
@@ -80,6 +86,17 @@ def raw_image_to_representation(image_file, representations):
             moments = cv2.moments(np.array(img_gray))
             hu_moments = cv2.HuMoments(moments).flatten()
             combined_representation.extend(hu_moments)
+        elif representation == 'TEXTURE':
+            glcm = skimage.feature.graycomatrix(np.array(img_gray), distances=[5], angles=[0], levels=256, symmetric=True, normed=True)
+            props = ['contrast', 'dissimilarity', 'homogeneity', 'energy', 'correlation']
+            texture_features = [skimage.feature.graycoprops(glcm, prop)[0, 0] for prop in props]
+            combined_representation.extend(texture_features)
+        elif representation == 'GRADIENT':
+            gradient_x = cv2.Sobel(np.array(img_gray), cv2.CV_64F, 1, 0, ksize=3)
+            gradient_y = cv2.Sobel(np.array(img_gray), cv2.CV_64F, 0, 1, ksize=3)
+            gradient_mag = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
+            combined_representation.extend(gradient_mag.flatten())
+
         else:
             raise ValueError("Undefined representation")
 
@@ -344,7 +361,10 @@ def estimate_model_score(train_dataset, algo_dico, k):
 
 
 # Main
-representations = ['PX','GC', 'FOURIER', 'WAVELET']
+#meilleure combi pour le score de données d'entrainement(79%) et de verification(77%)
+#representations = ['TEXTURE', 'FOURIER', 'WAVELET','PX','GC']
+#meilleure combi pour le score de données de test(80%)
+representations = ['TEXTURE','PX','GC', 'FOURIER', 'WAVELET']
 
 dataset = load_transform_label_train_dataset('Data',representations)
 
