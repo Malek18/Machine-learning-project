@@ -192,7 +192,6 @@ def load_transform_test_dataset(directory, representation):
 
     return test_dataset
 
-
 """
 Learn a model (function) from a pre-computed representation of the dataset, using the algorithm
 and its hyper-parameters described in algo_dico
@@ -361,14 +360,16 @@ def estimate_model_score(train_dataset, algo_dico, k):
 
 
 # Main
-#meilleure combi pour le score de données d'entrainement(79%) et de verification(77%)
-#representations = ['TEXTURE', 'FOURIER', 'WAVELET','PX','GC']
-#meilleure combi pour le score de données de test(80%)
+
 representations = ['TEXTURE','PX','GC', 'FOURIER', 'WAVELET']
 
 dataset = load_transform_label_train_dataset('Data',representations)
 
+# Charger et transformer les données de test
 dataset_test = load_transform_test_dataset('AllTest', representations)
+
+
+
 
 algo_dico1 = {
     'algo': 'svm',
@@ -376,6 +377,8 @@ algo_dico1 = {
     'C': 1.0,
     'gamma': 'scale'
 }
+
+
 algo_dico2 = {
     'algo': 'multinomial naive bayes',
     'force_alpha': True
@@ -407,18 +410,16 @@ algo_dico7 = {
     'activation': 'relu',
     'solver': 'adam'
 }
-
 # Diviser les données d'entraînement en ensembles d'entraînement et de validation
 train_dataset, validation_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
 
-#calculer le score d'entrainement
+# Calculer le score d'entraînement
 score = estimate_model_score(train_dataset, algo_dico1, k=5)
-print("Score d'entrainement :", score)
+print("Score d'entraînement :", score)
 
 # Calculer le score de validation
 validation_score = estimate_model_score(validation_dataset, algo_dico1, k=5)
 print("Score de validation:", validation_score)
-
 
 # Entraîner le modèle sur l'ensemble d'entraînement
 best_model = learn_model_from_dataset(train_dataset, algo_dico1)
@@ -434,8 +435,11 @@ true_labels = [data['label'] for data in dataset_test]
 test_accuracy = accuracy_score(true_labels, predicted_labels)
 print("Score de test:", test_accuracy)
 
-sentence = f"Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entrainement est: {score},le score est de donnée de validation est: {validation_score},le score est de donnée de test est: {test_accuracy}. L'algorithme de classification utilisé est : {algo_dico1}\n"
+sentence = f"Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entraînement est: {score}, le score est de donnée de validation est: {validation_score}, le score est de donnée de test est: {test_accuracy}. L'algorithme de classification utilisé est : {algo_dico1}\n"
 
 # Enregistrer les prédictions dans un fichier
 final_result = write_predictions("./", "test.txt", test_predictions, algo_dico1, sentence)
 print(final_result)
+
+
+

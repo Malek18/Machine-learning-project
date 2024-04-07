@@ -1,4 +1,4 @@
-Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entrainement est: 0.7944821347806423,le score est de donnée de validation est: 0.7713235294117646,le score est de donnée de test est: 0.7926829268292683. L'algorithme de classification utilisé est : {'algo': 'svm', 'kernel': 'rbf', 'C': 1.0, 'gamma': 'scale'}
+Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entraînement est: 0.7854816824966079, le score est de donnée de validation est: 0.7588235294117647, le score est de donnée de test est: 0.8048780487804879. L'algorithme de classification utilisé est : {'algo': 'svm', 'kernel': 'rbf', 'C': 1.0, 'gamma': 'scale'}
 Algorithme utilisé :
 algo: svm
 kernel: rbf
@@ -10,7 +10,7 @@ gamma: scale
 0cxvhyy.jpg -1
 0derz.jpg -1
 0dfe.jpg -1
-0do.jpeg 1
+0do.jpeg -1
 0dspv6.jpg 1
 0fe.jpeg 1
 0ft.jpeg -1
