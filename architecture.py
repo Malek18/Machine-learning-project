@@ -157,10 +157,19 @@ def load_transform_test_dataset(directory, representation):
         for file in files:
             image_file = os.path.join(root, file)
             image_representation = raw_image_to_representation(image_file, representation)
+
+            # Vérifie le premier caractère du nom du fichier pour déterminer l'étiquette
+            if file[0] == '0':
+                label = -1  # Ailleurs
+            elif file[0] == '1':
+                label = 1  # Mer
+            else:
+                raise ValueError("Étiquette invalide pour le fichier :", file)
+
             test_data = {
                 'name': file,
                 'representation': image_representation,
-                'label': 0
+                'label': label
             }
             test_dataset.append(test_data)
 
@@ -226,25 +235,7 @@ def learn_model_from_dataset(train_dataset, algo_dico):
     return model
 
 
-"""
 
-
-train_dataset = load_transform_label_train_dataset('/home/diae/Documents/projetAA/projetAA/Data','HC')
-
-
-algo_dico = {
-  'algo': 'multinomial naive bayes',
-  'force_alpha': True  
-}
-model = learn_model_from_dataset(train_dataset, algo_dico)
-if model is not None:
-  print("Le modèle a été correctement entraîné.")
-  print("Classes:", model.classes_)
-  print("Probabilités a priori des classes:", model.class_log_prior_)
-  print("Probabilités conditionnelles des caractéristiques:", model.feature_log_prob_)
-else:
-  print("Une erreur s'est produite lors de l'apprentissage du modèle.")
-"""
 """
 Dans ce code :
 
@@ -353,14 +344,11 @@ def estimate_model_score(train_dataset, algo_dico, k):
 
 
 # Main
+representations = ['PX','GC', 'FOURIER', 'WAVELET']
 
+dataset = load_transform_label_train_dataset('Data',representations)
 
-representations = ['PX', 'GC', 'FOURIER', 'WAVELET']
-
-dataset = load_transform_label_train_dataset('Data',
-                                             representations)
-
-dataset_test = load_transform_test_dataset('AllTest' , representations)
+dataset_test = load_transform_test_dataset('AllTest', representations)
 
 algo_dico1 = {
     'algo': 'svm',
@@ -403,24 +391,31 @@ algo_dico7 = {
 # Diviser les données d'entraînement en ensembles d'entraînement et de validation
 train_dataset, validation_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
 
+#calculer le score d'entrainement
 score = estimate_model_score(train_dataset, algo_dico1, k=5)
+print("Score d'entrainement :", score)
 
+# Calculer le score de validation
+validation_score = estimate_model_score(validation_dataset, algo_dico1, k=5)
+print("Score de validation:", validation_score)
+
+
+# Entraîner le modèle sur l'ensemble d'entraînement
 best_model = learn_model_from_dataset(train_dataset, algo_dico1)
 
-# Utiliser le meilleur modèle pour faire des prédictions sur l'ensemble de test
+# Prédire les étiquettes des données de test avec le modèle entraîné
 test_predictions = predict_sample_label(dataset_test, best_model)
 
-sentence = f"Pour la machine qui détecte la mère à partir des images données, le score est : {score}. L'algorithme de classification utilisé est : {algo_dico1}\n"
+# Extraire les étiquettes prédites et les étiquettes réelles des données de test
+predicted_labels = [data['label'] for data in test_predictions]
+true_labels = [data['label'] for data in dataset_test]
+
+# Calculer le score d'exactitude des prédictions par rapport aux étiquettes réelles
+test_accuracy = accuracy_score(true_labels, predicted_labels)
+print("Score de test:", test_accuracy)
+
+sentence = f"Pour la machine qui détecte la mère à partir des images données, le score est de donnée d'entrainement est: {score},le score est de donnée de validation est: {validation_score},le score est de donnée de test est: {test_accuracy}. L'algorithme de classification utilisé est : {algo_dico1}\n"
 
 # Enregistrer les prédictions dans un fichier
 final_result = write_predictions("./", "test.txt", test_predictions, algo_dico1, sentence)
 print(final_result)
-
-"""
-hypersparametres=algo_dico1
-model = learn_model_from_dataset(dataset, algo_dico1)
-predicted_labels = predict_sample_label(dataset_test, model)
-score = estimate_model_score(dataset, algo_dico1, k=5)
-sentence=f"pour la machine qui detecte la mére a partir des images données,le score est : {score} l'algorithme de classification est :\n"
-final_result = write_predictions("./", "test.txt", predicted_labels, hypersparametres, sentence)
-print(final_result)"""
