@@ -1,18 +1,21 @@
-pour la machine qui detecte la mére a partir des images données,le score est : 0.7513958272112842 l'algorithme de classification est :
+Maritime_Minds
+Pour la machine qui détecte la mère à partir des images données.
+Le score d'entrainement est :0.6585365853658537.
+Le score de test est : 0.6585365853658537.
+L'algorithme de classification utilisé est : {'algo': 'svm', 'kernel': 'rbf', 'C': 1.0, 'gamma': 'scale'}
 Algorithme utilisé :
-algo: svm
-kernel: rbf
-C: 1.0
-gamma: scale
+algo: k_neighbors
+n_neighbors: 5
+weights: uniform
 0aahh.jpg 1
 0bezss.JPG -1
 0ct.jpeg -1
 0cxvhyy.jpg 1
-0derz.jpg -1
-0dfe.jpg -1
-0do.jpeg -1
+0derz.jpg 1
+0dfe.jpg 1
+0do.jpeg 1
 0dspv6.jpg 1
-0fe.jpeg -1
+0fe.jpeg 1
 0ft.jpeg -1
 0gaqll.jpg -1
 0groby.jpg 1
@@ -21,14 +24,14 @@ gamma: scale
 0ju.jpeg 1
 0lityn.jpg -1
 0ljuucxs.jpg -1
-0loab.jpg 1
+0loab.jpg -1
 0lp.jpeg -1
-0mdouu.jpeg -1
-0mlpp.jpg -1
-0mm.jpeg 1
+0mdouu.jpeg 1
+0mlpp.jpg 1
+0mm.jpeg -1
 0nirrz.jpg 1
 0nwghg.jpg -1
-0nxooz.jpg -1
+0nxooz.jpg 1
 0nz.jpeg 1
 0ppqgq.jpg -1
 0q1.jpeg -1
@@ -36,38 +39,38 @@ gamma: scale
 0q3.jpeg -1
 0q4.jpeg -1
 0q5.jpeg -1
-0q6.jpeg -1
+0q6.jpeg 1
 0se.jpeg 1
 0sqzz.jpg 1
 0swuia.jpg -1
-0tu.jpeg -1
-0vbfg.JPG 1
+0tu.jpeg 1
+0vbfg.JPG -1
 0wmzp.jpg 1
-0wq.jpeg -1
+0wq.jpeg 1
 0wsqwx.jpg -1
 0xsoua.jpg 1
 1anbu.jpg 1
-1bbhhy.jpg 1
-1btr.jpg -1
+1bbhhy.jpg -1
+1btr.jpg 1
 1dden.jpg 1
 1dg.jpeg 1
-1eraq.jpg 1
+1eraq.jpg -1
 1gotya.jpeg 1
 1grate.jpg 1
 1hg.jpeg 1
 1hu.jpeg 1
 1ksnw5.jpg 1
 1lkpa.jpg 1
-1loupiz.jpeg 1
+1loupiz.jpeg -1
 1mc76.jpg 1
 1mhst.jpg 1
-1mpzva.jpg -1
-1njuu.jpg 1
-1oohh.jpg -1
+1mpzva.jpg 1
+1njuu.jpg -1
+1oohh.jpg 1
 1phao.JPG 1
 1pooi.jpeg 1
 1q10.jpeg 1
-1q11.jpeg -1
+1q11.jpeg 1
 1q12.jpeg 1
 1q7.jpeg 1
 1q8.jpeg 1
